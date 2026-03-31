@@ -1,0 +1,56 @@
+port: 7890
+socks-port: 7891
+mixed-port: 2080
+allow-lan: true
+mode: rule
+log-level: info
+
+tcp-fast-open: false
+
+tun:
+  enable: true
+  stack: system
+  auto-route: true
+  mtu: 900
+
+dns:
+  enable: true
+  ipv6: true
+  enhanced-mode: redir-host
+
+  nameserver:
+    - https://dns.google/dns-query
+    - https://cloudflare-dns.com/dns-query
+    - 1.1.1.1
+
+  fallback:
+    - https://dns.adguard.com/dns-query
+    - https://dns.quad9.net/dns-query
+    - https://doh.opendns.com/dns-query
+
+proxies:
+  - name: slow-handshake
+    type: ss
+    server: 142.93.42.106
+    port: 8388
+    cipher: chacha20-ietf-poly1305
+    password: test123
+    udp: true
+
+proxy-groups:
+  - name: Proxy
+    type: select
+    proxies:
+      - slow-handshake
+      - DIRECT
+
+rules:
+  - DOMAIN,us1.opensocks.site,DIRECT
+  - AND,((NETWORK,UDP),(DST-PORT,135)),REJECT
+  - AND,((NETWORK,UDP),(DST-PORT,137)),REJECT
+  - AND,((NETWORK,UDP),(DST-PORT,138)),REJECT
+  - AND,((NETWORK,UDP),(DST-PORT,139)),REJECT
+  - AND,((NETWORK,UDP),(DST-PORT,5353)),REJECT
+  - IP-CIDR,224.0.0.0/3,REJECT
+  - IP-CIDR6,ff00::/8,REJECT
+  - MATCH,Proxy
